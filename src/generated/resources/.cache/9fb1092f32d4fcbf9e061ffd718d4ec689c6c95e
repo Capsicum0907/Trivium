@@ -1,0 +1,13 @@
+// 1.21.1	2026-08-16T06:22:13.8730414	Recipes
+f1cf57cec6f02d2146a89ab75ba648be8ae9ec4b data/trivium/advancement/recipes/tools/diamond_paxel.json
+14957ed12cc90e33951fce09640fb4c9bfa56c8f data/trivium/advancement/recipes/tools/golden_paxel.json
+bee1c0a7caf3ea773a1456e6f5fc40cb26e55da5 data/trivium/advancement/recipes/tools/iron_paxel.json
+9b9e3b4a7053708d6705d6d3d2253449da8eb3f5 data/trivium/advancement/recipes/tools/netherite_paxel.json
+b2dbe638788931fe4c1cdbec865b450c0b951f55 data/trivium/advancement/recipes/tools/stone_paxel.json
+a960251959a58d0c744b932b53f90aac7297d4ef data/trivium/advancement/recipes/tools/wooden_paxel.json
+d8913a969936f8a7f3e71bae7ddf0ef59da08c41 data/trivium/recipe/diamond_paxel.json
+11330623ef08c9bbc769a847ef3020184d42e835 data/trivium/recipe/golden_paxel.json
+b4d7e82e13f52fd1c9aa17bff82c76b1e3672386 data/trivium/recipe/iron_paxel.json
+c4150e1ec7db766908ea864b202d42b0c426c45a data/trivium/recipe/netherite_paxel.json
+aae48e30cd214da47eb71287e0d9b1ebe28eefda data/trivium/recipe/stone_paxel.json
+7d261142ee7ab214921c977daab10a9f508176b7 data/trivium/recipe/wooden_paxel.json
