@@ -67,6 +67,20 @@ game tests exist to keep it that way, and they check both halves of the gate —
 what may hold an enchantment at all, and what the table will offer — because those
 are separate fields that fail separately.
 
+Joining a tag is a wide claim, so here is everything in the game that reads those
+three tags, counted rather than assumed. Across all 5,613 data files in 1.21.1
+there are five: the four `enchantable/*` tags above, and `breaks_decorated_pots`,
+which lists every tool there is and means a paxel now cracks a decorated pot into
+its sherds instead of shattering it. No trade, loot table or advancement reads
+them. The claim reaches exactly as far as it should.
+
+The two `c:` tags — `tools/mining_tool` and `tools/melee_weapon` — are written out
+by hand, because NeoForge fills those with a list of items rather than with the
+tool tags, so nothing would carry a paxel into them. Nothing in the game reads
+them; they are a signal to other mods, and which of the two a paxel belongs in is
+a judgment rather than something the source settles. It mines, and it hits with
+the axe's weight, so it is in both.
+
 **A paxel is worth every tool it replaces.** It mines three families and is crafted
 from one tool per family, so it holds three tools' worth of durability and mines
 each family exactly as fast as that family's tool would. Breaking a block still
