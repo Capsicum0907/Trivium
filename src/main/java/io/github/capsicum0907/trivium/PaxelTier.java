@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.Block;
  * long it lasts.
  *
  * <p><b>A paxel is worth every tool it replaces.</b> It covers
- * {@link PaxelItem#MINEABLE} families of block and is crafted from one tool per
+ * {@link PaxelFamily} families of block and is crafted from one tool per
  * family, so it holds that many tools' worth of use. Breaking a block still costs one
  * point, so the number of blocks a paxel breaks is the number the three tools between
  * them would have broken: the trade is even, and what is gained is the inventory slot
@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.Block;
 public record PaxelTier(Tier base) implements Tier {
     @Override
     public int getUses() {
-        return base.getUses() * PaxelItem.MINEABLE.size();
+        return base.getUses() * PaxelFamily.count();
     }
 
     @Override

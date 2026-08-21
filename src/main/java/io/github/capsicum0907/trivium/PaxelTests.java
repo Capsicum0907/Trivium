@@ -5,14 +5,22 @@ import java.util.List;
 import io.github.capsicum0907.trivium.data.TestStructures;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -61,7 +69,7 @@ public final class PaxelTests {
     public static void holdsThreeToolsWorth(GameTestHelper helper) {
         for (PaxelMaterial material : PaxelMaterial.values()) {
             ItemStack paxel = paxel(material);
-            int expected = material.tier().getUses() * PaxelItem.MINEABLE.size();
+            int expected = material.tier().getUses() * PaxelFamily.count();
             check(paxel.getMaxDamage() == expected,
                     "a " + material.itemName() + " should hold " + expected
                             + " uses, not " + paxel.getMaxDamage());
@@ -165,6 +173,64 @@ public final class PaxelTests {
         rightClick(helper, Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT, true));
         helper.assertBlockState(SUBJECT, state -> !state.getValue(CampfireBlock.LIT),
                 () -> "a paxel should put a campfire out");
+        helper.succeed();
+    }
+
+    /**
+     * Which enchantments a paxel accepts, and which it refuses.
+     *
+     * <p>This is the failure that says nothing: an item in none of the
+     * {@code enchantable/*} tags is simply declined by the anvil and never offered by
+     * the table, with no error anywhere. It went unnoticed until it was looked for.
+     *
+     * <p>The refusals matter as much as the acceptances. Joining
+     * {@code #minecraft:pickaxes}, {@code #axes} and {@code #shovels} is a wide claim,
+     * and the way to show it is not too wide is that the sword's and the armour's
+     * enchantments still do not stick.
+     */
+    @GameTest(template = TestStructures.PLATFORM)
+    public static void takesTheEnchantmentsOfTheToolsItReplaces(GameTestHelper helper) {
+        record Case(ResourceKey<Enchantment> enchantment, boolean expected, String why) {
+        }
+        List<Case> cases = List.of(
+                new Case(Enchantments.EFFICIENCY, true, "it mines"),
+                new Case(Enchantments.SILK_TOUCH, true, "it mines for drops"),
+                new Case(Enchantments.FORTUNE, true, "it mines for drops"),
+                new Case(Enchantments.UNBREAKING, true, "it wears out"),
+                new Case(Enchantments.MENDING, true, "it wears out"),
+                new Case(Enchantments.SHARPNESS, true, "it hits with the axe's weight"),
+                new Case(Enchantments.SWEEPING_EDGE, false, "it is not a sword"),
+                new Case(Enchantments.PROTECTION, false, "it is not worn"));
+
+        Registry<Enchantment> registry = helper.getLevel().registryAccess().registryOrThrow(Registries.ENCHANTMENT);
+        ItemStack paxel = paxel(PaxelMaterial.DIAMOND);
+        for (Case testCase : cases) {
+            Holder<Enchantment> enchantment = registry.getHolderOrThrow(testCase.enchantment());
+            boolean supported = paxel.supportsEnchantment(enchantment);
+            check(supported == testCase.expected(),
+                    "a diamond paxel should " + (testCase.expected() ? "" : "not ")
+                            + "take " + testCase.enchantment().location().getPath()
+                            + ", because " + testCase.why());
+        }
+        helper.succeed();
+    }
+
+    /**
+     * The other half of the gate. An enchantment names two sets of items: what may
+     * hold it at all, and what the table will offer it on. They are separate fields
+     * and fail separately, so an item can be enchantable by book and still be a blank
+     * at the table.
+     */
+    @GameTest(template = TestStructures.PLATFORM)
+    public static void theTableOffersEnchantments(GameTestHelper helper) {
+        Registry<Enchantment> registry = helper.getLevel().registryAccess().registryOrThrow(Registries.ENCHANTMENT);
+        ItemStack paxel = paxel(PaxelMaterial.DIAMOND);
+        List<EnchantmentInstance> offered = EnchantmentHelper.getAvailableEnchantmentResults(
+                30, paxel, registry.holders().map(holder -> (Holder<Enchantment>) holder));
+
+        check(!offered.isEmpty(), "an enchanting table at level 30 should offer a diamond paxel something");
+        check(offered.stream().anyMatch(instance -> instance.enchantment.is(Enchantments.EFFICIENCY)),
+                "efficiency should be among what the table offers a diamond paxel");
         helper.succeed();
     }
 

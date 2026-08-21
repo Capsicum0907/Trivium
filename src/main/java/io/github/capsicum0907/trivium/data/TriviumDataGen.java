@@ -27,6 +27,8 @@ public final class TriviumDataGen {
         generator.addProvider(event.includeClient(), new PaxelItemModels(output, event.getExistingFileHelper()));
         generator.addProvider(event.includeClient(), new PaxelLanguage(output));
         generator.addProvider(event.includeServer(), new PaxelRecipes(output, event.getLookupProvider()));
+        generator.addProvider(event.includeServer(),
+                new PaxelItemTags(output, event.getLookupProvider(), event.getExistingFileHelper()));
         generator.addProvider(event.includeServer(), new TestStructures(output));
     }
 }

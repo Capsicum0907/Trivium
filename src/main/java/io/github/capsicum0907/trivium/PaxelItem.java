@@ -16,8 +16,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -58,21 +56,12 @@ import net.neoforged.neoforge.common.ItemAbility;
  * exactly the thing a paxel has to replace.
  */
 public class PaxelItem extends TieredItem {
-    /** The tags a paxel mines. Order is irrelevant here; overlap between them is harmless. */
-    public static final List<TagKey<Block>> MINEABLE = List.of(
-            BlockTags.MINEABLE_WITH_PICKAXE,
-            BlockTags.MINEABLE_WITH_AXE,
-            BlockTags.MINEABLE_WITH_SHOVEL);
-
     /**
-     * Announced abilities: the union of what the three tools each claim. This is the
+     * Announced abilities: the union of what each family's tool claims. This is the
      * gate other code consults ("can this item strip a log?"); it does not perform
      * anything on its own.
      */
-    private static final Set<ItemAbility> ABILITIES = union(
-            ItemAbilities.DEFAULT_PICKAXE_ACTIONS,
-            ItemAbilities.DEFAULT_AXE_ACTIONS,
-            ItemAbilities.DEFAULT_SHOVEL_ACTIONS);
+    private static final Set<ItemAbility> ABILITIES = abilities();
 
     /**
      * One right-click behaviour: which ability to ask the block for, how to announce
@@ -121,17 +110,16 @@ public class PaxelItem extends TieredItem {
     private static Tool toolFor(Tier tier) {
         List<Tool.Rule> rules = new ArrayList<>();
         rules.add(Tool.Rule.deniesDrops(tier.getIncorrectBlocksForDrops()));
-        for (TagKey<Block> tag : MINEABLE) {
-            rules.add(Tool.Rule.minesAndDrops(tag, tier.getSpeed()));
+        for (PaxelFamily family : PaxelFamily.values()) {
+            rules.add(Tool.Rule.minesAndDrops(family.mineable(), tier.getSpeed()));
         }
         return new Tool(rules, 1.0F, 1);
     }
 
-    @SafeVarargs
-    private static Set<ItemAbility> union(Set<ItemAbility>... sets) {
+    private static Set<ItemAbility> abilities() {
         Set<ItemAbility> all = new HashSet<>();
-        for (Set<ItemAbility> set : sets) {
-            all.addAll(set);
+        for (PaxelFamily family : PaxelFamily.values()) {
+            all.addAll(family.abilities());
         }
         return Set.copyOf(all);
     }
