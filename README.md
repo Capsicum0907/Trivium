@@ -137,6 +137,9 @@ The sprites are placeholder art, drawn to be consistent rather than to be good.
   item is `ItemStack.isCorrectToolForDrops`, which reads the `Tool` component a
   paxel already carries. Nothing in Fodina dispatches on an item class. No special
   case is needed on either side, and the two mods still have no dependency.
+  Confirmed in a running client on 2026-08-23: a paxel drives Fodina's bulk break
+  with nothing configured, and the paxels now appear in Fodina's item groups for
+  the three tool tags.
 
 ## License
 
