@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -49,7 +50,7 @@ public final class PaxelTests {
     }
 
     @GameTest(template = TestStructures.PLATFORM)
-    public static void minesAllThreeFamilies(GameTestHelper helper) {
+    public static void minesEveryFamily(GameTestHelper helper) {
         ItemStack paxel = paxel(PaxelMaterial.IRON);
         check(paxel.isCorrectToolForDrops(Blocks.STONE.defaultBlockState()),
                 "an iron paxel should mine stone, which is the pickaxe family");
@@ -57,6 +58,8 @@ public final class PaxelTests {
                 "an iron paxel should mine oak log, which is the axe family");
         check(paxel.isCorrectToolForDrops(Blocks.DIRT.defaultBlockState()),
                 "an iron paxel should mine dirt, which is the shovel family");
+        check(paxel.isCorrectToolForDrops(Blocks.HAY_BLOCK.defaultBlockState()),
+                "an iron paxel should mine a hay block, which is the hoe family");
         helper.succeed();
     }
 
@@ -69,7 +72,7 @@ public final class PaxelTests {
     public static void holdsThreeToolsWorth(GameTestHelper helper) {
         for (PaxelMaterial material : PaxelMaterial.values()) {
             ItemStack paxel = paxel(material);
-            int expected = material.tier().getUses() * PaxelFamily.count();
+            int expected = material.tier().getUses() * PaxelFamily.crafted().size();
             check(paxel.getMaxDamage() == expected,
                     "a " + material.itemName() + " should hold " + expected
                             + " uses, not " + paxel.getMaxDamage());
@@ -86,7 +89,7 @@ public final class PaxelTests {
     public static void mineFasterThanAHand(GameTestHelper helper) {
         ItemStack paxel = paxel(PaxelMaterial.IRON);
         ItemStack empty = ItemStack.EMPTY;
-        for (Block block : new Block[] { Blocks.STONE, Blocks.OAK_LOG, Blocks.DIRT }) {
+        for (Block block : new Block[] { Blocks.STONE, Blocks.OAK_LOG, Blocks.DIRT, Blocks.SCULK }) {
             BlockState state = block.defaultBlockState();
             check(paxel.getDestroySpeed(state) > empty.getDestroySpeed(state),
                     "an iron paxel should break " + block.getName().getString() + " faster than a bare hand");
@@ -148,9 +151,28 @@ public final class PaxelTests {
     }
 
     @GameTest(template = TestStructures.PLATFORM)
-    public static void flattensAPath(GameTestHelper helper) {
+    public static void tillsFarmland(GameTestHelper helper) {
         rightClick(helper, Blocks.GRASS_BLOCK.defaultBlockState());
-        helper.assertBlockPresent(Blocks.DIRT_PATH, SUBJECT);
+        helper.assertBlockPresent(Blocks.FARMLAND, SUBJECT);
+        helper.succeed();
+    }
+
+    /**
+     * The half of the tilling decision that is easy to lose. Tilling and flattening
+     * answer the same click on the same blocks, so flattening was dropped rather than
+     * ordered behind — and dropped at the ability, which is what the hook consults
+     * before it will do anything at all.
+     *
+     * <p>Podzol is the case that says the two are not simply ordered: it flattens and
+     * does not till, so an item that merely preferred tilling would still turn it into
+     * a path. This one leaves it alone.
+     */
+    @GameTest(template = TestStructures.PLATFORM)
+    public static void neverFlattens(GameTestHelper helper) {
+        check(!paxel(PaxelMaterial.IRON).canPerformAction(ItemAbilities.SHOVEL_FLATTEN),
+                "a paxel must not claim it can flatten, or the hook will let it");
+        rightClick(helper, Blocks.PODZOL.defaultBlockState());
+        helper.assertBlockPresent(Blocks.PODZOL, SUBJECT);
         helper.succeed();
     }
 

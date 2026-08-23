@@ -9,15 +9,16 @@ import net.minecraft.world.level.block.Block;
  * A vanilla tier seen through the paxel's terms: everything the same except how
  * long it lasts.
  *
- * <p><b>A paxel is worth every tool it replaces.</b> It covers
- * {@link PaxelFamily} families of block and is crafted from one tool per
- * family, so it holds that many tools' worth of use. Breaking a block still costs one
- * point, so the number of blocks a paxel breaks is the number the three tools between
- * them would have broken: the trade is even, and what is gained is the inventory slot
- * and never having to switch, not the mileage.
+ * <p><b>A paxel lasts as long as the tools it is made from.</b> It holds one tool's
+ * worth of use per family in {@link PaxelFamily#crafted()}. Breaking a block still
+ * costs one point, so the number of blocks a paxel breaks is the number those tools
+ * between them would have broken: the trade is even, and what is gained is the
+ * inventory slot and never having to switch, not the mileage.
  *
- * <p>The number is not written down anywhere: it follows the count of families, so
- * a fourth would move it on its own.
+ * <p>The number is not written down anywhere: it follows the recipe. A family the
+ * recipe does not ask for — the hoe — widens what the paxel reaches without
+ * lengthening it, which is why {@code crafted()} is the list read here and
+ * {@code values()} is not.
  *
  * <p>This has to be a tier rather than a property on the item: {@code TieredItem}
  * writes the durability from {@code tier.getUses()} after the properties are
@@ -26,7 +27,7 @@ import net.minecraft.world.level.block.Block;
 public record PaxelTier(Tier base) implements Tier {
     @Override
     public int getUses() {
-        return base.getUses() * PaxelFamily.count();
+        return base.getUses() * PaxelFamily.crafted().size();
     }
 
     @Override

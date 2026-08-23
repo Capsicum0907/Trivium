@@ -1,11 +1,13 @@
 # Trivium
 
 One tool where three would be. A **paxel** mines everything a pickaxe, an axe and a
-shovel each mine, and strips, scrapes, waxes off, flattens and douses as they do.
+shovel each mine, and strips, scrapes, waxes off and douses as they do. It digs what
+a hoe digs and tills what a hoe tills as well, without being made of one.
 
-*Trivium* is Latin for the place where three roads meet.
+*Trivium* is Latin for the place where three roads meet. The three are the tools it
+is made from; the hoe came later and did not rename it.
 
-> **Status: stage 2.** Loads in a client, and twelve game tests pass headlessly.
+> **Status: stage 2.** Loads in a client, and thirteen game tests pass headlessly.
 
 ## Target
 
@@ -22,23 +24,34 @@ small as it is.
 
 **What a paxel mines is data, not code.** Since 1.20.5 a tool's reach lives in the
 `Tool` data component as a list of rules over block tags. A paxel is therefore one
-component carrying three mine-rules instead of one — no dispatch, no tool-type
-check, and blocks that other mods put in `mineable/pickaxe`, `mineable/axe` or
-`mineable/shovel` are covered without a line of per-mod code.
+component carrying a mine-rule per family instead of one — no dispatch, no tool-type
+check, and blocks that other mods put in `mineable/pickaxe`, `mineable/axe`,
+`mineable/shovel` or `mineable/hoe` are covered without a line of per-mod code.
 
 The tier's deny-rule has to come first in that list. `Tool.isCorrectForDrops`
 answers with the first matching rule that has an opinion, so a mine-rule placed
 ahead of it would let a wooden paxel drop obsidian.
 
 **What it does on right-click is not reimplemented.** Stripping a log, scraping
-copper, removing wax, flattening a path and dousing a campfire all resolve through
+copper, removing wax, tilling farmland and dousing a campfire all resolve through
 `BlockState.getToolModifiedState`, which is the hook the vanilla items call and the
-one other mods override. `PaxelItem` only decides the order to try them in and how
-to announce the result — the behaviours themselves stay where they were.
+one other mods override. `PaxelItem` only decides which of them to offer, in what
+order, and how to announce the result — the behaviours themselves stay where they
+were.
 
-`canPerformAction` reports the union of the three tools' abilities. That is the
-gate other code consults, not the thing that performs the work; both are needed,
-and they are not the same mechanism.
+**It tills, and it does not flatten.** Those two answer the same click on the same
+blocks: grass, dirt, coarse dirt and rooted dirt are in both vanilla tables, both
+want room above, and neither cares which face was hit. Nothing in the click tells
+them apart, so one of them had to go rather than be ordered behind the other.
+Farmland is worth more than a path, and a path is a shovel away.
+
+Dropping it is done at the ability, not at the order. `canPerformAction` reports
+digging each family plus exactly the right-clicks the item offers, and
+`getToolModifiedState` asks `canPerformAction` before it will do anything — so
+leaving `shovel_flatten` out is not an order that hides flattening but an item that
+cannot flatten, and other mods are told the same thing the item does. The list is
+read off the behaviours rather than copied from the vanilla tools' sets, because a
+claim with nothing behind it is a lie the game repeats on the mod's behalf.
 
 One deliberate difference from the vanilla items: the effect runs on the server
 only, and the sound is played to everyone rather than predicted on the client.
@@ -81,12 +94,20 @@ them; they are a signal to other mods, and which of the two a paxel belongs in i
 a judgment rather than something the source settles. It mines, and it hits with
 the axe's weight, so it is in both.
 
-**A paxel is worth every tool it replaces.** It mines three families and is crafted
-from one tool per family, so it holds three tools' worth of durability and mines
-each family exactly as fast as that family's tool would. Breaking a block still
-costs one point, so the trade is even in blocks broken: what is gained is the
+**A paxel lasts as long as the tools it is made from.** It is crafted from a
+pickaxe, an axe and a shovel, so it holds three tools' worth of durability and mines
+each of those families exactly as fast as that family's tool would. Breaking a block
+still costs one point, so the trade is even in blocks broken: what is gained is the
 inventory slot and never having to switch, not the mileage. The multiplier is not
-written down — it is the number of families, so a fourth would move it on its own.
+written down — it is the number of families the recipe asks for.
+
+**The hoe is a gift, and the table says so.** `PaxelFamily` has four rows but only
+three name a tool the recipe wants. The hoe row names none, which is the whole of
+the rule: `crafted()` is what the recipe iterates and what durability multiplies by,
+`values()` is what mining, tags and abilities iterate. So a paxel reaches leaves,
+hay, sculk and moss, and tills, without costing a fourth tool or lasting a third
+longer. Nothing had to be written twice for that to hold, and a family cannot be in
+the recipe without lengthening the tool, or lengthen it without being in the recipe.
 
 That is also why the recipe demands the three tools be **undamaged**. A worn tool
 would otherwise buy back a full paxel, which would make a given amount of ore worth
@@ -121,15 +142,17 @@ The sprites are placeholder art, drawn to be consistent rather than to be good.
 - [x] **0** — scaffold, registry, creative tab, datagen
 - [x] **1** — the paxel: mining reach, right-click behaviours, recipes, textures
 - [x] **2** — checked. The client loads all six with no missing model or texture,
-  and twelve game tests cover the three tag families, mining speed against each
-  dedicated tool, durability, tier gating in both directions, all five right-click
-  behaviours, and which enchantments the item takes and refuses
+  and thirteen game tests cover the four tag families, mining speed against each
+  dedicated tool, durability, tier gating in both directions, every right-click
+  behaviour including that it never flattens, and which enchantments the item takes
+  and refuses
 - [ ] **3** — open questions below
 
 ## Open questions
 
-- Whether the hoe belongs in it. Three is what the name says, and a hoe's till is a
-  different kind of action from digging, but a four-way tool is the more common ask.
+- ~~Whether the hoe belongs in it.~~ Decided: it does, as a family that is dug and
+  tilled but not paid for. Tilling replaced flattening rather than joining it, for
+  the reason above. The name stayed.
 - Whether a paxel should be repairable from any of the three tools, or only from its
   material as it is now.
 - ~~Interaction with [Fodina](../Fodina).~~ Read and closed. `ToolType.forBlock`

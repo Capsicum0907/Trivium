@@ -35,34 +35,38 @@ import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
 
 /**
- * A pickaxe, an axe and a shovel in one item.
+ * A pickaxe, an axe and a shovel in one item, which also digs what a hoe digs and
+ * tills what a hoe tills.
  *
  * <p>Two properties are worth stating up front, because they are why this class is
  * as short as it is:
  *
  * <p><b>What it mines is data, not code.</b> Since 1.20.5 a tool's reach lives in
  * the {@link Tool} data component as a list of rules over block tags. A paxel is
- * therefore one component carrying three mine-rules instead of one — no dispatch,
- * and blocks that other mods put in those tags are covered for free.
+ * therefore one component carrying a mine-rule per family instead of one — no
+ * dispatch, and blocks that other mods put in those tags are covered for free.
  *
  * <p><b>What it does on right-click is not reimplemented.</b> Stripping, scraping,
- * wax removal, flattening and dousing all resolve through
+ * wax removal, tilling and dousing all resolve through
  * {@link BlockState#getToolModifiedState}, which is the hook the game itself calls
- * and the one other mods override. This class only decides the order to try them
- * in and how to announce the result.
+ * and the one other mods override. This class only decides which of them to offer,
+ * in what order, and how to announce the result.
+ *
+ * <p><b>It does not flatten.</b> Tilling and flattening answer the same click on the
+ * same blocks — grass, dirt, coarse dirt and rooted dirt are in both tables — and
+ * nothing in the click tells them apart, so one of them had to go. Farmland is worth
+ * more than a path, and a path is a shovel away. Leaving the ability out of
+ * {@link #ABILITIES} is what enforces it: the hook refuses an ability the item does
+ * not claim, so this is not an order that hides flattening but an item that cannot
+ * flatten.
  *
  * <p>Extends {@link TieredItem} rather than {@code DiggerItem} because that class
  * writes a single-tag {@link Tool} component over whatever it is handed, which is
  * exactly the thing a paxel has to replace.
+ *
+ * @see PaxelFamily for which families are paid for and which are a gift
  */
 public class PaxelItem extends TieredItem {
-    /**
-     * Announced abilities: the union of what each family's tool claims. This is the
-     * gate other code consults ("can this item strip a log?"); it does not perform
-     * anything on its own.
-     */
-    private static final Set<ItemAbility> ABILITIES = abilities();
-
     /**
      * One right-click behaviour: which ability to ask the block for, how to announce
      * it, and when it may be tried at all.
@@ -76,15 +80,30 @@ public class PaxelItem extends TieredItem {
 
     /**
      * The order right-clicks are tried in. First match wins, as in the vanilla items
-     * this is assembled from — the axe tries strip, then scrape, then wax off; the
-     * shovel tries flatten, then douse.
+     * this is assembled from — the axe tries strip, then scrape, then wax off. The
+     * rest do not overlap: tilling only answers for dirt, dousing only for fire.
      */
     private static final List<RightClick> RIGHT_CLICKS = List.of(
             new RightClick(ItemAbilities.AXE_STRIP, SoundEvents.AXE_STRIP, 0, PaxelItem::axeAllowed),
             new RightClick(ItemAbilities.AXE_SCRAPE, SoundEvents.AXE_SCRAPE, 3005, PaxelItem::axeAllowed),
             new RightClick(ItemAbilities.AXE_WAX_OFF, SoundEvents.AXE_WAX_OFF, 3004, PaxelItem::axeAllowed),
-            new RightClick(ItemAbilities.SHOVEL_FLATTEN, SoundEvents.SHOVEL_FLATTEN, 0, PaxelItem::flattenAllowed),
+            new RightClick(ItemAbilities.HOE_TILL, SoundEvents.HOE_TILL, 0, PaxelItem::always),
             new RightClick(ItemAbilities.SHOVEL_DOUSE, null, 1009, PaxelItem::shovelAllowed));
+
+    /**
+     * Announced abilities: digging each family, plus exactly the right-clicks above.
+     *
+     * <p>Read off what the item does rather than taken from the vanilla tools' sets,
+     * because the two must not drift. It is not only a claim made to other code:
+     * {@code getToolModifiedState} asks {@code canPerformAction} first and answers
+     * {@code null} when it says no, so an ability left out here cannot happen, and
+     * one left in with nothing behind it is a lie the game will repeat.
+     *
+     * <p>Declared after {@link #RIGHT_CLICKS} because it reads it. Static fields are
+     * initialised in the order they are written, so moving this above the table makes
+     * it read a null one.
+     */
+    private static final Set<ItemAbility> ABILITIES = abilities();
 
     public PaxelItem(PaxelMaterial material) {
         this(new PaxelTier(material.tier()), material);
@@ -119,7 +138,10 @@ public class PaxelItem extends TieredItem {
     private static Set<ItemAbility> abilities() {
         Set<ItemAbility> all = new HashSet<>();
         for (PaxelFamily family : PaxelFamily.values()) {
-            all.addAll(family.abilities());
+            all.add(family.dig());
+        }
+        for (RightClick rightClick : RIGHT_CLICKS) {
+            all.add(rightClick.ability());
         }
         return Set.copyOf(all);
     }
@@ -211,14 +233,16 @@ public class PaxelItem extends TieredItem {
         return !shieldIntent;
     }
 
-    /** A shovel does nothing to the underside of a block: the path would face into it. */
+    /** A shovel does nothing to the underside of a block, as the vanilla one does not. */
     private static boolean shovelAllowed(UseOnContext context) {
         return context.getClickedFace() != Direction.DOWN;
     }
 
-    /** A path also needs room above it, or the block placed there would be buried. */
-    private static boolean flattenAllowed(UseOnContext context) {
-        return shovelAllowed(context)
-                && context.getLevel().getBlockState(context.getClickedPos().above()).isAir();
+    /**
+     * Tilling has nothing to refuse here. Farmland needs room above it, but that is
+     * checked where the behaviour lives, and a hoe works on any face.
+     */
+    private static boolean always(UseOnContext context) {
+        return true;
     }
 }
