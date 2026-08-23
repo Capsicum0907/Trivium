@@ -117,6 +117,14 @@ Durability has to be expressed as a `Tier` (`PaxelTier`) rather than as an item
 property, because `TieredItem` writes it from `tier.getUses()` after the properties
 are handed over and would overwrite anything set beforehand.
 
+**A paxel is not upgraded, it is assembled.** There is no smithing recipe: a
+netherite paxel is three netherite tools, the same as every other material is three
+of its own. The cost of knowing that is real and is accepted here — an enchanted
+diamond paxel cannot be carried across to netherite the way an enchanted diamond
+pickaxe can, because vanilla smithing takes exactly one item as its addition, so the
+only recipe it could express would hand over three tools' worth of netherite for one
+ingot. Paying the ingots and re-enchanting is the honest half of that trade.
+
 There is no config. Data components are baked when the item is registered, long
 before a server config is read, so a setting for reach or speed would silently do
 nothing.
@@ -146,15 +154,17 @@ The sprites are placeholder art, drawn to be consistent rather than to be good.
   dedicated tool, durability, tier gating in both directions, every right-click
   behaviour including that it never flattens, and which enchantments the item takes
   and refuses
-- [ ] **3** — open questions below
+- [ ] **3** — the sprites, which are placeholders, and the licence. Every question
+  under *Decided* below was one of these until it was answered; nothing about how the
+  item behaves is open any more
 
-## Open questions
+## Decided
 
 - ~~Whether the hoe belongs in it.~~ Decided: it does, as a family that is dug and
   tilled but not paid for. Tilling replaced flattening rather than joining it, for
   the reason above. The name stayed.
-- Whether a paxel should be repairable from any of the three tools, or only from its
-  material as it is now.
+- ~~Whether a paxel should be repairable from any of the three tools.~~ Decided: no,
+  the material only, as `TieredItem` already does through the tier's ingredient.
 - ~~Interaction with [Fodina](../Fodina).~~ Read and closed. `ToolType.forBlock`
   keys off the *block's* `mineable/*` tag, and the only question asked of the held
   item is `ItemStack.isCorrectToolForDrops`, which reads the `Tool` component a
