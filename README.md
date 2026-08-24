@@ -143,7 +143,15 @@ python tools/make_textures.py   # regenerate the item sprites
 
 Nothing under `src/generated/resources` is edited by hand, and neither are the item
 PNGs — `tools/make_textures.py` draws all six from one shape and one palette table.
-The sprites are placeholder art, drawn to be consistent rather than to be good.
+
+**The silhouette is the genre's, not an invention.** Ten paxel mods were opened and
+their sprites read pixel by pixel; nine draw the same skeleton — a blade above, an
+arm hooking down its right side, a thin handle on the diagonal — including the four
+most downloaded. A tool that does not look like its genre is harder to recognise
+than one that does, and being novel here would cost the player something and buy
+nothing. What is Trivium's own is the squared foot at the end of the arm and the
+drawn-out left point on the blade. The pixels come from the script; none were
+copied.
 
 ## Roadmap
 
@@ -154,9 +162,9 @@ The sprites are placeholder art, drawn to be consistent rather than to be good.
   dedicated tool, durability, tier gating in both directions, every right-click
   behaviour including that it never flattens, and which enchantments the item takes
   and refuses
-- [ ] **3** — the sprites, which are placeholders, and the licence. Every question
-  under *Decided* below was one of these until it was answered; nothing about how the
-  item behaves is open any more
+- [ ] **3** — the licence, and whatever the sprites still want. Every question under
+  *Decided* below was open here until it was answered; nothing about how the item
+  behaves is
 
 ## Decided
 

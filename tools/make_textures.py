@@ -12,6 +12,14 @@ with nothing below-right of it falls into shadow, and everything else is body
 colour. That rule is what keeps the six consistent no matter what the shape
 becomes.
 
+The silhouette follows the one every other paxel uses - a blade above, an arm
+hooking down its right side, a thin handle on the diagonal. Five of the six
+mods surveyed draw that same skeleton, which makes it the genre rather than
+anyone's design, and an item that does not look like its genre is harder to
+recognise than one that does. What is ours is the squared foot at the end of
+the arm and the drawn-out left point on the blade; the pixels are this
+script's, not anyone else's.
+
 No third-party libraries: the PNG is assembled from zlib and struct, both of
 which ship with Python.
 
@@ -33,48 +41,40 @@ OUT_DIR = pathlib.Path(__file__).resolve().parents[1] / "src/main/resources/asse
 
 def _handle() -> set[tuple[int, int]]:
     """A two-pixel-wide shaft running from the bottom left up to the head."""
-    return {(2 + k + d, 14 - k) for k in range(8) for d in (0, 1)}
-
-
-def _spike() -> set[tuple[int, int]]:
-    """The pick end: a tapering arm reaching up and to the left off the shaft.
-
-    Three pixels across rather than one. A single-pixel diagonal at this size
-    reads as a scratch on the handle instead of a separate prong.
-    """
-    rows = {
-        2: range(4, 6),
-        3: range(4, 7),
-        4: range(5, 8),
-        5: range(6, 9),
-        6: range(7, 10),
-    }
-    return {(x, y) for y, xs in rows.items() for x in xs}
+    return {(2 + k + d, 14 - k) for k in range(7) for d in (0, 1)}
 
 
 def _blade() -> set[tuple[int, int]]:
-    """The axe end: a rounded wedge on the right of the shaft."""
+    """The upper mass: a leaf with its tip at the top, widening as it comes down.
+
+    Its left corner is drawn out to a point and its right corner runs into the arm
+    below, so the one body reads as two ends rather than as a lump.
+    """
     rows = {
-        2: range(11, 13),
-        3: range(11, 14),
-        4: range(10, 15),
-        5: range(10, 15),
-        6: range(10, 14),
+        1: range(7, 9),
+        2: range(6, 10),
+        3: range(4, 11),
+        4: range(3, 12),
+        5: range(5, 13),
     }
     return {(x, y) for y, xs in rows.items() for x in xs}
 
 
-def _scoop() -> set[tuple[int, int]]:
-    """The shovel end: a flat-bottomed slab hanging below the blade."""
+def _arm() -> set[tuple[int, int]]:
+    """The hook: an arm leaving the blade's right corner and curving down past the
+    handle, ending in a squared foot rather than a taper."""
     rows = {
+        6: range(9, 13),
         7: range(10, 14),
         8: range(11, 14),
-        9: range(11, 13),
+        9: range(11, 15),
+        10: range(11, 15),
+        11: range(10, 15),
     }
     return {(x, y) for y, xs in rows.items() for x in xs}
 
 
-HEAD = _spike() | _blade() | _scoop()
+HEAD = _blade() | _arm()
 HANDLE = _handle() - HEAD
 
 # --- colour ----------------------------------------------------------------
