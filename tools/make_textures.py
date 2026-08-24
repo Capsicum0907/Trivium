@@ -6,11 +6,17 @@ src/main/resources are its output and are not edited by hand. Adding a material
 is adding one row to PALETTES, and changing the shape changes all of them at
 once, which is the only way six sprites stay a set rather than six drawings.
 
-Shape is described once, as regions of a 16x16 grid. Shading is derived rather
-than drawn: a pixel with nothing above-left of it catches the light, a pixel
-with nothing below-right of it falls into shadow, and everything else is body
-colour. That rule is what keeps the six consistent no matter what the shape
-becomes.
+Shape is described once, as regions of a 16x16 grid, and shading is derived
+from it rather than painted. The rule is read off the vanilla tools, whose
+pixels were counted for this: every edge is dark, the edge that turns away
+below-right is darkest of all, and the light sits just inside the lit edge
+rather than on it. Five tones for the head, four for the shaft. That rule is
+what keeps the six consistent no matter what the shape becomes.
+
+The ramps are the vanilla ones, sampled from each material's own pickaxe, axe
+and shovel. A paxel is seen in a row of slots beside those tools, so borrowing
+their exact tones is what makes it look like it belongs there; inventing a
+ramp would only make it look like it came from somewhere else.
 
 The silhouette follows the one every other paxel uses - a blade above, an arm
 hooking down its right side, a thin handle on the diagonal. Five of the six
@@ -31,6 +37,7 @@ from __future__ import annotations
 import pathlib
 import struct
 import zlib
+from typing import NamedTuple
 
 SIZE = 16
 
@@ -39,9 +46,16 @@ OUT_DIR = pathlib.Path(__file__).resolve().parents[1] / "src/main/resources/asse
 # --- shape -----------------------------------------------------------------
 # Coordinates are (x, y) with the origin at the top left, as the PNG is stored.
 
-def _handle() -> set[tuple[int, int]]:
-    """A two-pixel-wide shaft running from the bottom left up to the head."""
-    return {(2 + k + d, 14 - k) for k in range(7) for d in (0, 1)}
+HANDLE_LENGTH = 7
+
+
+def _handle_anchors() -> list[tuple[int, int]]:
+    """The left pixel of the shaft on each of its rows, bottom left up to the head.
+
+    Three across rather than two, which is what every vanilla handle is: a dark
+    side, a grained core and the side that turns away.
+    """
+    return [(2 + k, 14 - k) for k in range(HANDLE_LENGTH)]
 
 
 def _blade() -> set[tuple[int, int]]:
@@ -75,21 +89,43 @@ def _arm() -> set[tuple[int, int]]:
 
 
 HEAD = _blade() | _arm()
-HANDLE = _handle() - HEAD
 
 # --- colour ----------------------------------------------------------------
-# Each entry is (light, body, shadow) for the head. The handle is a stick in
-# every case, so its three tones are shared.
+# Every ramp below is vanilla's own, read out of that material's pickaxe, axe and
+# shovel. Nothing here is chosen by eye.
 
-HANDLE_TONES = ("#9C7A4E", "#7A5C3A", "#5A4128")
+
+class Ramp(NamedTuple):
+    """Head tones, lightest to darkest."""
+
+    highlight: str
+    light: str
+    body: str
+    dark: str
+    outline: str
+
+
+class Grain(NamedTuple):
+    """Shaft tones. One fewer, because a stick has no specular."""
+
+    light: str
+    body: str
+    dark: str
+    outline: str
+
+
+# The stick, which is the shaft of every vanilla tool and so of every paxel.
+HANDLE_TONES = Grain("#896727", "#684E1E", "#493615", "#281E0B")
 
 PALETTES = {
-    "wooden": ("#B08C55", "#93713D", "#6B4E28"),
-    "stone": ("#A8A8A8", "#8A8A8A", "#666666"),
-    "iron": ("#E8E8E8", "#C8C8C8", "#9A9A9A"),
-    "golden": ("#FDF06A", "#F0C41B", "#B58800"),
-    "diamond": ("#8FF2E6", "#4AEDD9", "#2C9E92"),
-    "netherite": ("#6E6260", "#4A4143", "#2C2427"),
+    "wooden": Ramp("#886626", "#755821", "#6B511F", "#372910", "#20180A"),
+    "stone": Ramp("#9A9A9A", "#898989", "#7F7F7F", "#494949", "#181818"),
+    "iron": Ramp("#FFFFFF", "#D8D8D8", "#C1C1C1", "#444444", "#181818"),
+    "golden": Ramp("#FDFF76", "#EAEE57", "#E9B115", "#825D16", "#3F2E0E"),
+    "diamond": Ramp("#33EBCB", "#2BC7AC", "#27B29A", "#0E3F36", "#082520"),
+    # Netherite's own tools are speckled with two hues; these are the grey-brown
+    # ones. The purple that also appears there belongs to the ingot, not the tool.
+    "netherite": Ramp("#867B86", "#706770", "#5D565D", "#3B393B", "#231012"),
 }
 
 
@@ -98,15 +134,24 @@ def _rgba(colour: str) -> tuple[int, int, int, int]:
     return (int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16), 255)
 
 
-def _tone(pixel: tuple[int, int], region: set[tuple[int, int]], tones: tuple[str, str, str]) -> str:
-    """Light where the region ends going up-left, shadow where it ends down-right."""
+def _tone(pixel: tuple[int, int], region: set[tuple[int, int]], ramp: Ramp) -> str:
+    """Where a pixel sits relative to the edges of its own region.
+
+    The order is the whole of it. The outline claims a pixel before the rim does,
+    so a corner that faces both ways reads as turning away; and the light is two
+    steps in from the lit edge rather than on it, which is what stops the shape
+    looking like a sticker.
+    """
     x, y = pixel
-    light, body, shadow = tones
+    if (x + 1, y) not in region or (x, y + 1) not in region:
+        return ramp.outline
+    if (x - 1, y) not in region or (x, y - 1) not in region:
+        return ramp.dark
     if (x - 1, y - 1) not in region:
-        return light
-    if (x + 1, y + 1) not in region:
-        return shadow
-    return body
+        return ramp.highlight
+    if (x - 2, y) not in region or (x, y - 2) not in region:
+        return ramp.light
+    return ramp.body
 
 
 # --- output ----------------------------------------------------------------
@@ -131,20 +176,26 @@ def _png(pixels: dict[tuple[int, int], tuple[int, int, int, int]]) -> bytes:
     )
 
 
-def draw(head_tones: tuple[str, str, str]) -> bytes:
+def draw(ramp: Ramp) -> bytes:
     pixels: dict[tuple[int, int], tuple[int, int, int, int]] = {}
-    for pixel in HANDLE:
-        pixels[pixel] = _rgba(_tone(pixel, HANDLE, HANDLE_TONES))
+    for row, (x, y) in enumerate(_handle_anchors()):
+        # The core alternates by row. That is the grain: a shaft in one flat colour
+        # is the thing that reads as plastic no matter how good the head is.
+        core = HANDLE_TONES.light if row % 2 == 0 else HANDLE_TONES.body
+        pixels[(x, y)] = _rgba(HANDLE_TONES.dark)
+        pixels[(x + 1, y)] = _rgba(core)
+        pixels[(x + 2, y)] = _rgba(HANDLE_TONES.outline)
+    # The head is laid over the shaft, as the metal of a real one is.
     for pixel in HEAD:
-        pixels[pixel] = _rgba(_tone(pixel, HEAD, head_tones))
+        pixels[pixel] = _rgba(_tone(pixel, HEAD, ramp))
     return _png(pixels)
 
 
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    for prefix, tones in PALETTES.items():
+    for prefix, ramp in PALETTES.items():
         path = OUT_DIR / f"{prefix}_paxel.png"
-        path.write_bytes(draw(tones))
+        path.write_bytes(draw(ramp))
         print(f"wrote {path.relative_to(OUT_DIR.parents[5])}")
 
 

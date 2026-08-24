@@ -147,14 +147,24 @@ PNGs — `tools/make_textures.py` draws all six from one shape and one palette t
 **The silhouette is the genre's, not an invention.** Ten paxel mods were opened and
 their sprites read pixel by pixel. All ten draw the same skeleton — a blade above, an
 arm hooking down its right side, a thin handle on the diagonal — the four most
-downloaded included. Two of them (Piercing Paxels, Azure Paxels) draw it heavier,
-with the upper blade grown until it fills most of the square, but the three parts
-and their arrangement are the same; there is no second way of drawing this item in
-use. A tool that does not look like its genre is harder to recognise
+downloaded included. Azure Paxels draws it heavier, with the pick
+grown until it fills most of the square, and Piercing Paxels stands a sword up
+through the middle of it — but both keep the three parts and their arrangement
+underneath. There is no second way of drawing this item in use. A tool that does not look like its genre is harder to recognise
 than one that does, and being novel here would cost the player something and buy
 nothing. What is Trivium's own is the squared foot at the end of the arm and the
 drawn-out left point on the blade. The pixels come from the script; none were
 copied.
+
+**The tones are vanilla's, and the shading is a rule, not a hand.** Each material's
+ramp was sampled out of that material's own pickaxe, axe and shovel, because a paxel
+is seen in a row of slots beside those tools and borrowing their exact tones is what
+makes it look like it belongs. The rule was read off the same textures by counting
+pixels: every edge is dark, the edge that turns away below-right is darkest, and the
+light sits two steps inside the lit edge rather than on it. The shaft is three across
+with a core that alternates by row — a shaft in one flat colour is what reads as
+plastic however good the head is. An iron paxel is now 9 colours over 75 pixels,
+where vanilla's iron pickaxe is 9 over 68; it was 4 over 68 before.
 
 ## Roadmap
 
