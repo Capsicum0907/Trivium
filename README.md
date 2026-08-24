@@ -145,9 +145,12 @@ Nothing under `src/generated/resources` is edited by hand, and neither are the i
 PNGs — `tools/make_textures.py` draws all six from one shape and one palette table.
 
 **The silhouette is the genre's, not an invention.** Ten paxel mods were opened and
-their sprites read pixel by pixel; nine draw the same skeleton — a blade above, an
-arm hooking down its right side, a thin handle on the diagonal — including the four
-most downloaded. A tool that does not look like its genre is harder to recognise
+their sprites read pixel by pixel. All ten draw the same skeleton — a blade above, an
+arm hooking down its right side, a thin handle on the diagonal — the four most
+downloaded included. Two of them (Piercing Paxels, Azure Paxels) draw it heavier,
+with the upper blade grown until it fills most of the square, but the three parts
+and their arrangement are the same; there is no second way of drawing this item in
+use. A tool that does not look like its genre is harder to recognise
 than one that does, and being novel here would cost the player something and buy
 nothing. What is Trivium's own is the squared foot at the end of the arm and the
 drawn-out left point on the blade. The pixels come from the script; none were
