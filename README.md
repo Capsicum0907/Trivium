@@ -7,7 +7,7 @@ a hoe digs and tills what a hoe tills as well, without being made of one.
 *Trivium* is Latin for the place where three roads meet. The three are the tools it
 is made from; the hoe came later and did not rename it.
 
-> **Status: stage 2.** Loads in a client, and thirteen game tests pass headlessly.
+> **Status: released, 1.0.0.** Loads in a client, and thirteen game tests pass headlessly.
 
 ## Target
 
