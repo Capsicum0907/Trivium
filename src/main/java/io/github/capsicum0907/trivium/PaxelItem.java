@@ -26,6 +26,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -111,6 +112,19 @@ public class PaxelItem extends TieredItem {
 
     private PaxelItem(Tier tier, PaxelMaterial material) {
         super(tier, properties(tier, material));
+        this.material = material;
+    }
+
+    private final PaxelMaterial material;
+
+    /**
+     * Vanilla's furnace names the wooden tools in its fuel table one at a time rather
+     * than reading a tag, so an item added from outside is not in it however wooden it
+     * is. This is the hook that says so; the value comes from the material table.
+     */
+    @Override
+    public int getBurnTime(ItemStack stack, @Nullable RecipeType<?> recipeType) {
+        return material.burnTime();
     }
 
     private static Item.Properties properties(Tier tier, PaxelMaterial material) {

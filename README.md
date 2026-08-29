@@ -7,7 +7,7 @@ a hoe digs and tills what a hoe tills as well, without being made of one.
 *Trivium* is Latin for the place where three roads meet. The three are the tools it
 is made from; the hoe came later and did not rename it.
 
-> **Status: released, 1.0.0.** Loads in a client, and thirteen game tests pass headlessly.
+> **Status: released, 1.0.0.** Loads in a client, and fourteen game tests pass headlessly.
 
 ## Target
 
@@ -171,11 +171,11 @@ where vanilla's iron pickaxe is 9 over 68; it was 4 over 68 before.
 - [x] **0** — scaffold, registry, creative tab, datagen
 - [x] **1** — the paxel: mining reach, right-click behaviours, recipes, textures
 - [x] **2** — checked. The client loads all six with no missing model or texture,
-  and thirteen game tests cover the four tag families, mining speed against each
+  and fourteen game tests cover the four tag families, mining speed against each
   dedicated tool, durability, tier gating in both directions, every right-click
-  behaviour including that it never flattens, and which enchantments the item takes
-  and refuses
-- [ ] **3** — the licence, and whatever the sprites still want. Every question under
+  behaviour including that it never flattens, which enchantments the item takes and
+  refuses, and what a wooden paxel is worth as fuel
+- [ ] **3** — whatever the sprites still want. Every question under
   *Decided* below was open here until it was answered; nothing about how the item
   behaves is
 

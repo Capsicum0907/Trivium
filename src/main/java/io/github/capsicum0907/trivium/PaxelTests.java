@@ -64,6 +64,28 @@ public final class PaxelTests {
     }
 
     /**
+     * A wooden paxel burns in a furnace, and the others do not.
+     *
+     * <p>The figure is not written here. It is taken from the wooden pickaxe the paxel
+     * is made from, so if vanilla ever changes what a wooden tool is worth as fuel this
+     * fails rather than drifting apart in silence.
+     */
+    @GameTest(template = TestStructures.PLATFORM)
+    public static void woodBurnsLikeTheToolsItIsMadeOf(GameTestHelper helper) {
+        int vanilla = new ItemStack(PaxelMaterial.WOOD.pickaxe()).getBurnTime(RecipeType.SMELTING);
+        check(vanilla > 0, "a wooden pickaxe should be fuel in vanilla, or this test"
+                + " has nothing to hold the paxel against");
+
+        for (PaxelMaterial material : PaxelMaterial.values()) {
+            int burn = paxel(material).getBurnTime(RecipeType.SMELTING);
+            int expected = material == PaxelMaterial.WOOD ? vanilla : 0;
+            check(burn == expected, "a " + material.itemName() + " should be worth "
+                    + expected + " ticks of fuel, not " + burn);
+        }
+        helper.succeed();
+    }
+
+    /**
      * A paxel lasts as long as the tools it was made from, and mines each family at
      * the speed the dedicated tool would. Together those two say the trade is even:
      * what is gained is the inventory slot, not the mileage.
