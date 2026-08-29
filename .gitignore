@@ -27,3 +27,6 @@ repo
 # python
 __pycache__
 *.pyc
+
+# Uploaded by hand to the mod pages, not part of the mod.
+branding
