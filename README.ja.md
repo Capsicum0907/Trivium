@@ -33,10 +33,6 @@ gradlew runData           # モデル・レシピ・言語ファイル・タグ�
 
 `JAVA_HOME` が JDK 21 を指しているか `java` が `PATH` にある必要があります。
 
-## 設計
-
-[docs/design.md](docs/design.md)（英語）にあります。
-
 ## ライセンス
 
 MIT。

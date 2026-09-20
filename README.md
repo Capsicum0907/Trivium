@@ -37,10 +37,6 @@ python tools/make_textures.py   # regenerate the item sprites
 
 `JAVA_HOME` must point at a JDK 21, or `java` must be on `PATH`.
 
-## Design
-
-See [docs/design.md](docs/design.md).
-
 ## License
 
 MIT.
